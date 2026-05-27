@@ -28,6 +28,9 @@ async function uploadLocalImages() {
     const files = fs.readdirSync(photosDir).filter(f => f.match(/\.(jpg|jpeg|png|gif)$/i));
     console.log(`Found ${files.length} images in "fotos de carrrusel" folder.`);
 
+    // Sort files to keep 1, 2, 3 order
+    files.sort();
+
     for (const file of files) {
       const filePath = path.join(photosDir, file);
       console.log(`Uploading local photo: ${file}...`);
@@ -61,13 +64,52 @@ async function uploadLocalImages() {
   return uploadedUrls;
 }
 
-async function run() {
-  console.log('--- STARTING HOMEPAGE & CAROUSEL CREATION ---');
+async function createBlogPage() {
+  console.log('Checking or creating the Blog page...');
+  try {
+    // Check if blog page already exists
+    const searchRes = await fetch(`${siteUrl}/wp-json/wp/v2/pages?slug=blog`, {
+      headers: { 'Authorization': `Basic ${authString}` }
+    });
+    const pages = await searchRes.json();
+    
+    if (pages.length > 0) {
+      console.log(`✅ Blog page already exists with ID: ${pages[0].id}`);
+      return pages[0].id;
+    }
 
-  // Step 1: Upload photos
+    const res = await fetch(`${siteUrl}/wp-json/wp/v2/pages`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${authString}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        title: 'Blog',
+        slug: 'blog',
+        content: '<!-- wp:paragraph -->\n<p>Explora nuestras últimas noticias, artículos sobre cine y novedades artísticas de Cali y Colombia.</p>\n<!-- /wp:paragraph -->',
+        status: 'publish'
+      })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      console.log(`✅ Success! Blog page created with ID: ${data.id}`);
+      return data.id;
+    } else {
+      console.error('❌ Failed to create Blog page:', data);
+    }
+  } catch (e) {
+    console.error('Error creating Blog page:', e.message);
+  }
+}
+
+async function run() {
+  console.log('--- STARTING HOMEPAGE, BLOG & CAROUSEL CREATION ---');
+
+  // Step 1: Upload photos from "fotos de carrrusel"
   let imageUrls = await uploadLocalImages();
 
-  // If no photos were found/uploaded, fall back to high-quality Unsplash creative placeholders!
+  // If no photos were found/uploaded, fall back to high-quality presets
   if (imageUrls.length === 0) {
     console.log('No local images found in "fotos de carrrusel". Using stunning high-quality Unsplash image presets...');
     imageUrls = [
@@ -76,7 +118,7 @@ async function run() {
       'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1200&h=600&q=80'
     ];
   } else {
-    // If fewer than 3 images are uploaded, pad with presets so we always have at least 3 slides
+    // Pad if fewer than 3 images
     if (imageUrls.length === 1) {
       imageUrls.push('https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=1200&h=600&q=80');
       imageUrls.push('https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1200&h=600&q=80');
@@ -85,7 +127,10 @@ async function run() {
     }
   }
 
-  // Create custom HTML block for the premium carousel slider
+  // Define logo link
+  const logoUrl = `${siteUrl}/wp-content/uploads/2026/05/logo.jpg`;
+
+  // Create custom HTML block for the premium carousel slider (FULL SCREEN WIDTH and AUTOPLAY fixed)
   const sliderHtml = `<!-- wp:html -->
 <div class="casting-slider-container">
   <div class="casting-slider">
@@ -118,24 +163,27 @@ async function run() {
     </div>
   </div>
   
-  <button class="slider-arrow prev" onclick="moveSlide(-1)">&#10094;</button>
-  <button class="slider-arrow next" onclick="moveSlide(1)">&#10095;</button>
+  <button class="slider-arrow prev" onclick="moveCastingSlide(-1)">&#10094;</button>
+  <button class="slider-arrow next" onclick="moveCastingSlide(1)">&#10095;</button>
   
   <div class="slider-dots">
-    <span class="dot active" onclick="setSlide(0)"></span>
-    <span class="dot" onclick="setSlide(1)"></span>
-    <span class="dot" onclick="setSlide(2)"></span>
+    <span class="dot active" onclick="setCastingSlide(0)"></span>
+    <span class="dot" onclick="setCastingSlide(1)"></span>
+    <span class="dot" onclick="setCastingSlide(2)"></span>
   </div>
 </div>
 
 <style>
 .casting-slider-container {
+  width: 100vw;
   position: relative;
-  width: 100%;
-  height: 550px;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  height: 650px; /* Taller and wider as requested */
   overflow: hidden;
   margin-bottom: 60px;
-  border-radius: 16px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.15);
 }
 .casting-slider {
@@ -185,14 +233,14 @@ async function run() {
   transform: translateY(0);
 }
 .casting-slide-content h2 {
-  font-size: 2.8rem;
+  font-size: 3.2rem; /* Larger font size for premium look */
   font-weight: 800;
   margin-bottom: 20px;
   color: #ffffff !important;
   text-shadow: 0 3px 6px rgba(0,0,0,0.4);
 }
 .casting-slide-content p {
-  font-size: 1.25rem;
+  font-size: 1.35rem;
   line-height: 1.6;
   margin-bottom: 30px;
   color: #f1f5f9 !important;
@@ -203,7 +251,7 @@ async function run() {
   background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
   color: #ffffff !important;
   text-decoration: none !important;
-  padding: 12px 32px;
+  padding: 14px 36px;
   font-weight: 600;
   border-radius: 30px;
   transition: transform 0.2s, box-shadow 0.2s;
@@ -221,12 +269,12 @@ async function run() {
   backdrop-filter: blur(8px);
   border: 1px solid rgba(255,255,255,0.25);
   color: white;
-  width: 50px;
-  height: 50px;
+  width: 55px;
+  height: 55px;
   cursor: pointer;
   z-index: 3;
   border-radius: 50%;
-  font-size: 20px;
+  font-size: 22px;
   transition: background 0.3s, transform 0.2s;
   display: flex;
   align-items: center;
@@ -237,8 +285,8 @@ async function run() {
   background: rgba(255, 255, 255, 0.35);
   transform: translateY(-50%) scale(1.05);
 }
-.slider-arrow.prev { left: 25px; }
-.slider-arrow.next { right: 25px; }
+.slider-arrow.prev { left: 30px; }
+.slider-arrow.next { right: 30px; }
 .slider-dots {
   position: absolute;
   bottom: 25px;
@@ -264,51 +312,61 @@ async function run() {
 </style>
 
 <script>
-(function() {
-  let currentSlide = 0;
+document.addEventListener('DOMContentLoaded', function() {
+  let current = 0;
   const slides = document.querySelectorAll('.casting-slide');
   const dots = document.querySelectorAll('.dot');
+  if (!slides.length) return;
 
-  window.showSlide = function(index) {
-    if (index >= slides.length) currentSlide = 0;
-    else if (index < 0) currentSlide = slides.length - 1;
-    else currentSlide = index;
+  function show(index) {
+    if (index >= slides.length) current = 0;
+    else if (index < 0) current = slides.length - 1;
+    else current = index;
 
-    slides.forEach((slide, i) => {
-      if (i === currentSlide) {
-        slide.classList.add('active');
-        dots[i].classList.add('active');
+    for (let i = 0; i < slides.length; i++) {
+      if (i === current) {
+        slides[i].classList.add('active');
+        if (dots[i]) dots[i].classList.add('active');
       } else {
-        slide.classList.remove('active');
-        dots[i].classList.remove('active');
+        slides[i].classList.remove('active');
+        if (dots[i]) dots[i].classList.remove('active');
       }
-    });
+    }
   }
 
-  window.moveSlide = function(step) {
-    showSlide(currentSlide + step);
-  }
+  // Globally expose handlers
+  window.moveCastingSlide = function(step) {
+    show(current + step);
+  };
+  window.setCastingSlide = function(index) {
+    show(index);
+  };
 
-  window.setSlide = function(index) {
-    showSlide(index);
-  }
-
-  // Auto-slide every 5 seconds
-  setInterval(() => {
-    moveSlide(1);
-  }, 5000);
-})();
+  // Fixed Autoplay: Slide moves on its own every 4 seconds!
+  setInterval(function() {
+    show(current + 1);
+  }, 4000);
+});
 </script>
 <!-- /wp:html -->`;
 
+  // Welcoming section introducing the LOGO at the top as requested!
   const introductionHtml = `<!-- wp:group {"style":{"spacing":{"padding":{"top":"60px","bottom":"60px"}}},"layout":{"type":"constrained"}} -->
 <div class="wp-block-group" style="padding-top:60px;padding-bottom:60px">
-  <!-- wp:heading {"textAlign":"center","level":2,"style":{"typography":{"fontSize":"2.4rem","fontWeight":"700"}},"textColor":"contrast"} -->
-  <h2 class="wp-block-heading has-text-align-center has-contrast-color has-text-color" style="font-size:2.4rem;font-weight:700">Bienvenidos a la Fundación Casting Entretenimiento</h2>
+  
+  <!-- Uutilizing the LOGO image prominently at the top -->
+  <!-- wp:image {"align":"center","sizeSlug":"medium","linkDestination":"none","className":"is-style-rounded"} -->
+  <figure class="wp-block-image aligncenter size-medium is-style-rounded">
+    <img src="${logoUrl}" alt="Logo Fundación Casting Entretenimiento" style="width:140px;height:140px;border-radius:50%;object-fit:cover;box-shadow:0 8px 20px rgba(0,0,0,0.1);border:3px solid #6366f1" />
+  </figure>
+  <!-- /wp:image -->
+
+  <!-- wp:heading {"textAlign":"center","level":2,"style":{"spacing":{"margin":{"top":"25px"}},"typography":{"fontSize":"2.4rem","fontWeight":"700"}},"textColor":"contrast"} -->
+  <h2 class="wp-block-heading has-text-align-center has-contrast-color has-text-color" style="margin-top:25px;font-size:2.4rem;font-weight:700">Bienvenidos a la Fundación Casting Entretenimiento</h2>
   <!-- /wp:heading -->
 
   <!-- wp:paragraph {"align":"center","style":{"typography":{"fontSize":"1.2rem"}}} -->
-  <p class="has-text-align-center" style="font-size:1.2rem;max-width:800px;margin:20px auto 0 auto;line-height:1.8">Somos una organización dedicada a generar espacios creativos, artísticos e inclusivos a través del teatro, la actuación y la producción de contenidos audiovisuales. Creemos firmemente que el arte transforma vidas, fortalece el amor propio y abre caminos para la movilidad social.</p>
+  <p class="has-text-align-center" style="font-size:1.2rem;max-width:800px;margin:20px auto 0 auto;line-height:1.8">Somos una organización dedicada a generar espacios creativos, artísticos e inclusivos a través del teatro, la actuación y la producción de contenidos audiovisuales. Creemos firmemente que el arte transforma lives, fortalece el amor propio y abre caminos para la movilidad social y el desarrollo socio-cultural de nuestro país.</p>
   <!-- /wp:paragraph -->
 </div>
 <!-- /wp:group -->
@@ -394,36 +452,68 @@ async function run() {
 
   const fullContent = `${sliderHtml}\n${introductionHtml}`;
 
-  console.log('Publishing Homepage page...');
-  let homePageData;
+  // Search if homepage already exists
+  console.log('Checking for existing Homepage...');
+  let homePageId;
   try {
-    const res = await fetch(`${siteUrl}/wp-json/wp/v2/pages`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Basic ${authString}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        title: 'Inicio',
-        slug: 'inicio',
-        content: fullContent,
-        status: 'publish'
-      })
+    const searchRes = await fetch(`${siteUrl}/wp-json/wp/v2/pages?slug=inicio`, {
+      headers: { 'Authorization': `Basic ${authString}` }
     });
-    homePageData = await res.json();
-    if (res.ok) {
-      console.log(`✅ Success! Homepage published at: ${homePageData.link}`);
+    const pages = await searchRes.json();
+    if (pages.length > 0) {
+      homePageId = pages[0].id;
+      console.log(`Updating existing Homepage page (ID: ${homePageId})...`);
+      const updateRes = await fetch(`${siteUrl}/wp-json/wp/v2/pages/${homePageId}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${authString}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          content: fullContent
+        })
+      });
+      const updateData = await updateRes.json();
+      if (updateRes.ok) {
+        console.log(`✅ Success! Homepage updated successfully at: ${updateData.link}`);
+      } else {
+        console.error('❌ Failed to update Homepage:', updateData);
+        return;
+      }
     } else {
-      console.error('❌ Failed to publish Homepage:', homePageData);
-      return;
+      console.log('Publishing new Homepage page...');
+      const createRes = await fetch(`${siteUrl}/wp-json/wp/v2/pages`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${authString}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          title: 'Inicio',
+          slug: 'inicio',
+          content: fullContent,
+          status: 'publish'
+        })
+      });
+      const createData = await createRes.json();
+      if (createRes.ok) {
+        homePageId = createData.id;
+        console.log(`✅ Success! Homepage published at: ${createData.link}`);
+      } else {
+        console.error('❌ Failed to publish Homepage:', createData);
+        return;
+      }
     }
   } catch (e) {
-    console.error('Error publishing homepage:', e.message);
+    console.error('Error during homepage operation:', e.message);
     return;
   }
 
-  // Set the homepage as static front page in WordPress settings
-  console.log('Configuring homepage as the WordPress Static Front Page...');
+  // Create Blog Page
+  const blogPageId = await createBlogPage();
+
+  // Set the homepage as static front page and blog page as posts page in WordPress settings
+  console.log('Configuring homepage and blog page settings in WordPress...');
   try {
     const settingsRes = await fetch(`${siteUrl}/wp-json/wp/v2/settings`, {
       method: 'POST',
@@ -433,14 +523,15 @@ async function run() {
       },
       body: JSON.stringify({
         show_on_front: 'page',
-        page_on_front: homePageData.id
+        page_on_front: homePageId,
+        page_for_posts: blogPageId
       })
     });
     const settingsData = await settingsRes.json();
     if (settingsRes.ok) {
-      console.log('✅ Success! Front page configured to display the "Inicio" page statically.');
+      console.log('✅ Success! Front page configured to display the "Inicio" page statically, and blog posts to display on "Blog" page.');
     } else {
-      console.error('❌ Failed to update front page settings:', settingsData);
+      console.error('❌ Failed to update front page/posts page settings:', settingsData);
     }
   } catch (e) {
     console.error('Error updating settings:', e.message);
