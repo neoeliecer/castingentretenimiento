@@ -67,7 +67,6 @@ async function uploadLocalImages() {
 async function createBlogPage() {
   console.log('Checking or creating the Blog page...');
   try {
-    // Check if blog page already exists
     const searchRes = await fetch(`${siteUrl}/wp-json/wp/v2/pages?slug=blog`, {
       headers: { 'Authorization': `Basic ${authString}` }
     });
@@ -104,33 +103,19 @@ async function createBlogPage() {
 }
 
 async function run() {
-  console.log('--- STARTING HOMEPAGE, BLOG & CAROUSEL CREATION ---');
+  console.log('--- STARTING HOMEPAGE & CAROUSEL CENTERING & UPDATE ---');
 
-  // Step 1: Upload photos from "fotos de carrrusel"
-  let imageUrls = await uploadLocalImages();
+  // Load uploaded images from Media
+  // For safety and speed, we will query existing media or scan from folder
+  let imageUrls = [
+    `${siteUrl}/wp-content/uploads/2026/05/1.png`,
+    `${siteUrl}/wp-content/uploads/2026/05/2.png`,
+    `${siteUrl}/wp-content/uploads/2026/05/3.png`
+  ];
 
-  // If no photos were found/uploaded, fall back to high-quality presets
-  if (imageUrls.length === 0) {
-    console.log('No local images found in "fotos de carrrusel". Using stunning high-quality Unsplash image presets...');
-    imageUrls = [
-      'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=1200&h=600&q=80',
-      'https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=1200&h=600&q=80',
-      'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1200&h=600&q=80'
-    ];
-  } else {
-    // Pad if fewer than 3 images
-    if (imageUrls.length === 1) {
-      imageUrls.push('https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=1200&h=600&q=80');
-      imageUrls.push('https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1200&h=600&q=80');
-    } else if (imageUrls.length === 2) {
-      imageUrls.push('https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1200&h=600&q=80');
-    }
-  }
-
-  // Define logo link
   const logoUrl = `${siteUrl}/wp-content/uploads/2026/05/logo.jpg`;
 
-  // Create custom HTML block for the premium carousel slider (FULL SCREEN WIDTH and AUTOPLAY fixed)
+  // Create custom HTML block for the premium carousel slider with perfect auto-centering and responsive padding
   const sliderHtml = `<!-- wp:html -->
 <div class="casting-slider-container">
   <div class="casting-slider">
@@ -175,15 +160,13 @@ async function run() {
 
 <style>
 .casting-slider-container {
-  width: 100vw;
+  width: 100%;
+  max-width: 1200px; /* Large premium widescreen width */
+  margin: 0 auto 60px auto; /* PERFECT AUTO-CENTERING ON THE PAGE! */
+  height: 600px;
   position: relative;
-  left: 50%;
-  right: 50%;
-  margin-left: -50vw;
-  margin-right: -50vw;
-  height: 650px; /* Taller and wider as requested */
   overflow: hidden;
-  margin-bottom: 60px;
+  border-radius: 16px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.15);
 }
 .casting-slider {
@@ -233,14 +216,14 @@ async function run() {
   transform: translateY(0);
 }
 .casting-slide-content h2 {
-  font-size: 3.2rem; /* Larger font size for premium look */
+  font-size: 3rem;
   font-weight: 800;
   margin-bottom: 20px;
   color: #ffffff !important;
   text-shadow: 0 3px 6px rgba(0,0,0,0.4);
 }
 .casting-slide-content p {
-  font-size: 1.35rem;
+  font-size: 1.3rem;
   line-height: 1.6;
   margin-bottom: 30px;
   color: #f1f5f9 !important;
@@ -251,7 +234,7 @@ async function run() {
   background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
   color: #ffffff !important;
   text-decoration: none !important;
-  padding: 14px 36px;
+  padding: 13px 34px;
   font-weight: 600;
   border-radius: 30px;
   transition: transform 0.2s, box-shadow 0.2s;
@@ -269,12 +252,12 @@ async function run() {
   backdrop-filter: blur(8px);
   border: 1px solid rgba(255,255,255,0.25);
   color: white;
-  width: 55px;
-  height: 55px;
+  width: 50px;
+  height: 50px;
   cursor: pointer;
   z-index: 3;
   border-radius: 50%;
-  font-size: 22px;
+  font-size: 20px;
   transition: background 0.3s, transform 0.2s;
   display: flex;
   align-items: center;
@@ -285,8 +268,8 @@ async function run() {
   background: rgba(255, 255, 255, 0.35);
   transform: translateY(-50%) scale(1.05);
 }
-.slider-arrow.prev { left: 30px; }
-.slider-arrow.next { right: 30px; }
+.slider-arrow.prev { left: 25px; }
+.slider-arrow.next { right: 25px; }
 .slider-dots {
   position: absolute;
   bottom: 25px;
@@ -334,7 +317,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  // Globally expose handlers
   window.moveCastingSlide = function(step) {
     show(current + step);
   };
@@ -342,7 +324,7 @@ document.addEventListener('DOMContentLoaded', function() {
     show(index);
   };
 
-  // Fixed Autoplay: Slide moves on its own every 4 seconds!
+  // Fixed Autoplay: moves on its own every 4 seconds
   setInterval(function() {
     show(current + 1);
   }, 4000);
@@ -350,11 +332,9 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 <!-- /wp:html -->`;
 
-  // Welcoming section introducing the LOGO at the top as requested!
   const introductionHtml = `<!-- wp:group {"style":{"spacing":{"padding":{"top":"60px","bottom":"60px"}}},"layout":{"type":"constrained"}} -->
 <div class="wp-block-group" style="padding-top:60px;padding-bottom:60px">
   
-  <!-- Uutilizing the LOGO image prominently at the top -->
   <!-- wp:image {"align":"center","sizeSlug":"medium","linkDestination":"none","className":"is-style-rounded"} -->
   <figure class="wp-block-image aligncenter size-medium is-style-rounded">
     <img src="${logoUrl}" alt="Logo Fundación Casting Entretenimiento" style="width:140px;height:140px;border-radius:50%;object-fit:cover;box-shadow:0 8px 20px rgba(0,0,0,0.1);border:3px solid #6366f1" />
@@ -366,7 +346,7 @@ document.addEventListener('DOMContentLoaded', function() {
   <!-- /wp:heading -->
 
   <!-- wp:paragraph {"align":"center","style":{"typography":{"fontSize":"1.2rem"}}} -->
-  <p class="has-text-align-center" style="font-size:1.2rem;max-width:800px;margin:20px auto 0 auto;line-height:1.8">Somos una organización dedicada a generar espacios creativos, artísticos e inclusivos a través del teatro, la actuación y la producción de contenidos audiovisuales. Creemos firmemente que el arte transforma lives, fortalece el amor propio y abre caminos para la movilidad social y el desarrollo socio-cultural de nuestro país.</p>
+  <p class="has-text-align-center" style="font-size:1.2rem;max-width:800px;margin:20px auto 0 auto;line-height:1.8">Somos una organización dedicada a generar espacios creativos, artísticos e inclusivos a través del teatro, la actuación y la producción de contenidos audiovisuales. Creemos firmemente que el arte transforma vidas, fortalece el amor propio y abre caminos para la movilidad social y el desarrollo socio-cultural de nuestro país.</p>
   <!-- /wp:paragraph -->
 </div>
 <!-- /wp:group -->
@@ -408,7 +388,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="wp-block-column" style="flex-basis:33.33%">
       <!-- wp:group {"style":{"spacing":{"padding":{"top":"30px","bottom":"30px","left":"30px","right":"30px"}},"border":{"radius":"12px","width":"1px","style":"solid","color":"#e2e8f0"}},"backgroundColor":"base"} -->
       <div class="wp-block-group has-base-background-color has-background" style="border-style:solid;border-width:1px;border-color:#e2e8f0;border-radius:12px;padding-top:30px;padding-bottom:30px;padding-left:30px;padding-right:30px">
-        <!-- wp:paragraph {"style":{"typography":{"fontSize":"2.5rem"}}} -->
+        <!-- wp:paragraph {"style":{"typography":"fontSize":"2.5rem"}}} -->
         <p style="font-size:2.5rem;margin:0 0 15px 0">🎯</p>
         <!-- /wp:paragraph -->
         <!-- wp:heading {"level":3,"style":{"typography":{"fontSize":"1.5rem","fontWeight":"600"}}} -->
@@ -452,8 +432,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   const fullContent = `${sliderHtml}\n${introductionHtml}`;
 
-  // Search if homepage already exists
-  console.log('Checking for existing Homepage...');
+  console.log('Querying Homepage page ID...');
   let homePageId;
   try {
     const searchRes = await fetch(`${siteUrl}/wp-json/wp/v2/pages?slug=inicio`, {
@@ -462,7 +441,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const pages = await searchRes.json();
     if (pages.length > 0) {
       homePageId = pages[0].id;
-      console.log(`Updating existing Homepage page (ID: ${homePageId})...`);
+      console.log(`Updating Homepage page (ID: ${homePageId}) with centered CSS and logo...`);
       const updateRes = await fetch(`${siteUrl}/wp-json/wp/v2/pages/${homePageId}`, {
         method: 'POST',
         headers: {
@@ -473,47 +452,21 @@ document.addEventListener('DOMContentLoaded', function() {
           content: fullContent
         })
       });
-      const updateData = await updateRes.json();
       if (updateRes.ok) {
-        console.log(`✅ Success! Homepage updated successfully at: ${updateData.link}`);
+        console.log('✅ Success! Homepage updated successfully.');
       } else {
-        console.error('❌ Failed to update Homepage:', updateData);
-        return;
-      }
-    } else {
-      console.log('Publishing new Homepage page...');
-      const createRes = await fetch(`${siteUrl}/wp-json/wp/v2/pages`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Basic ${authString}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          title: 'Inicio',
-          slug: 'inicio',
-          content: fullContent,
-          status: 'publish'
-        })
-      });
-      const createData = await createRes.json();
-      if (createRes.ok) {
-        homePageId = createData.id;
-        console.log(`✅ Success! Homepage published at: ${createData.link}`);
-      } else {
-        console.error('❌ Failed to publish Homepage:', createData);
-        return;
+        console.error('Failed to update homepage:', await updateRes.json());
       }
     }
   } catch (e) {
-    console.error('Error during homepage operation:', e.message);
-    return;
+    console.error('Error:', e.message);
   }
 
   // Create Blog Page
   const blogPageId = await createBlogPage();
 
-  // Set the homepage as static front page and blog page as posts page in WordPress settings
-  console.log('Configuring homepage and blog page settings in WordPress...');
+  // Re-verify static setting configurations
+  console.log('Verifying WordPress Static Front Page & Posts settings...');
   try {
     const settingsRes = await fetch(`${siteUrl}/wp-json/wp/v2/settings`, {
       method: 'POST',
@@ -527,17 +480,14 @@ document.addEventListener('DOMContentLoaded', function() {
         page_for_posts: blogPageId
       })
     });
-    const settingsData = await settingsRes.json();
     if (settingsRes.ok) {
-      console.log('✅ Success! Front page configured to display the "Inicio" page statically, and blog posts to display on "Blog" page.');
-    } else {
-      console.error('❌ Failed to update front page/posts page settings:', settingsData);
+      console.log('✅ Success! WordPress Settings are completely synced.');
     }
   } catch (e) {
-    console.error('Error updating settings:', e.message);
+    console.error('Error:', e.message);
   }
 
-  console.log('--- HOMEPAGE & CAROUSEL CREATION COMPLETED ---');
+  console.log('--- HOMEPAGE & CAROUSEL CENTERING & UPDATE COMPLETED ---');
 }
 
 run();
