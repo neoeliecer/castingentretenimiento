@@ -20,8 +20,8 @@ if (!appPassword) {
 
 const authString = Buffer.from(`${username}:${appPassword}`).toString('base64');
 
-// Form webhook URL for fcastingentretenimiento@gmail.com Google Sheet
-const googleSheetWebhook = 'https://script.google.com/macros/s/AKfycbzJ9hzzuD9De9sxiYxlBgXu-PqQcPRJ_e_ePfIdhx_gWncO9fh-nfcAteRKYO_5PhRxFg/exec';
+// Form webhook URL for fcastingentretenimiento@gmail.com Google Sheet (with email notification!)
+const googleSheetWebhook = 'https://script.google.com/macros/s/AKfycbw7VzdBj1WrwFArsiaXicoLK1Ui9uftu7IN6UbTIirTOw2zhXh6k3M1En_XuViGRrmf8A/exec';
 
 const contactPageHtml = `<!-- wp:group {"align":"full","style":{"spacing":{"padding":{"top":"100px","bottom":"100px"}},"background":{"gradient":"linear-gradient(135deg, #1e1b4b 0%, #311042 100%)"}},"textColor":"base","layout":{"type":"constrained"}} -->
 <div class="wp-block-group alignfull has-base-color has-text-color" style="padding-top:100px;padding-bottom:100px;background:linear-gradient(135deg, #1e1b4b 0%, #311042 100%)">
@@ -326,30 +326,77 @@ const contactPageHtml = `<!-- wp:group {"align":"full","style":{"spacing":{"padd
 <!-- /wp:group -->`;
 
 async function run() {
-  console.log('Publishing Contact page with integrated Google Sheets form...');
+  console.log('--- SYNCING CONTACT PAGE WITH DEDICATED SHEET ---');
+  
   try {
-    const response = await fetch(`${siteUrl}/wp-json/wp/v2/pages`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Basic ${authString}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        title: 'Contacto',
-        slug: 'contacto',
-        content: contactPageHtml,
-        status: 'publish'
-      })
+    // Check if original contact page exists
+    const searchRes = await fetch(`${siteUrl}/wp-json/wp/v2/pages?slug=contacto`, {
+      headers: { 'Authorization': `Basic ${authString}` }
     });
-    const result = await response.json();
-    if (response.ok) {
-      console.log(`✅ Success! Contact page published at: ${result.link}`);
+    const pages = await searchRes.json();
+    
+    if (pages.length > 0) {
+      const pageId = pages[0].id;
+      console.log(`Contact page exists with ID: ${pageId}. Updating page content...`);
+      const updateRes = await fetch(`${siteUrl}/wp-json/wp/v2/pages/${pageId}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${authString}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          content: contactPageHtml
+        })
+      });
+      if (updateRes.ok) {
+        console.log('✅ Success! Contact page updated with the brand new deployment URL.');
+      } else {
+        console.error('❌ Failed to update Contact page:', await updateRes.json());
+      }
     } else {
-      console.error('❌ Failed to publish Contact page:', result.message || JSON.stringify(result));
+      console.log('Contact page not found. Creating a new one...');
+      const createRes = await fetch(`${siteUrl}/wp-json/wp/v2/pages`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${authString}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          title: 'Contacto',
+          slug: 'contacto',
+          content: contactPageHtml,
+          status: 'publish'
+        })
+      });
+      if (createRes.ok) {
+        console.log('✅ Success! New Contact page created.');
+      } else {
+        console.error('❌ Failed to create Contact page:', await createRes.json());
+      }
     }
-  } catch (error) {
-    console.error('Error:', error.message);
+
+    // Clean up duplicate page (slug=contacto-2) if it exists
+    const searchRes2 = await fetch(`${siteUrl}/wp-json/wp/v2/pages?slug=contacto-2`, {
+      headers: { 'Authorization': `Basic ${authString}` }
+    });
+    const pages2 = await searchRes2.json();
+    if (pages2.length > 0) {
+      const dupId = pages2[0].id;
+      console.log(`Cleaning up duplicate page (ID: ${dupId}) permanently...`);
+      const deleteRes = await fetch(`${siteUrl}/wp-json/wp/v2/pages/${dupId}?force=true`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Basic ${authString}` }
+      });
+      if (deleteRes.ok) {
+        console.log('✅ Success! Duplicate page removed.');
+      }
+    }
+
+  } catch (e) {
+    console.error('Error during run:', e.message);
   }
+
+  console.log('--- CONTACT PAGE SYNCHRONIZATION COMPLETED ---');
 }
 
 run();
