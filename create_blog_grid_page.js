@@ -21,7 +21,92 @@ if (!appPassword) {
 const authString = Buffer.from(`${username}:${appPassword}`).toString('base64');
 
 // Premium 3-column grid HTML structure for the Blog page
-const blogPageGridHtml = `<!-- wp:group {"align":"full","style":{"spacing":{"padding":{"top":"100px","bottom":"100px"}},"background":{"gradient":"linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%)"}},"textColor":"base","layout":{"type":"constrained"}} -->
+const blogPageGridHtml = `<!-- wp:html -->
+<style>
+/* Subtle Logo Watermark Fixed Background */
+body::before {
+  content: "" !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background-image: url('https://dev-castingentretenimiento.pantheonsite.io/wp-content/uploads/2026/05/fondo.png') !important;
+  background-repeat: no-repeat !important;
+  background-position: center center !important;
+  background-size: 40% auto !important;
+  opacity: 0.035 !important;
+  z-index: -1 !important;
+  pointer-events: none !important;
+  mix-blend-mode: multiply !important;
+}
+
+/* Post card list margins override */
+.wp-block-post-template {
+  margin: 0 !important;
+  padding: 0 !important;
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)) !important;
+  gap: 30px !important;
+  list-style: none !important;
+}
+
+.wp-block-post-template > li {
+  margin: 0 !important;
+  list-style: none !important;
+}
+
+/* Glassmorphism/Premium Hover Card */
+.casting-blog-card {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.02) !important;
+  border-radius: 16px !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+}
+
+.casting-blog-card:hover {
+  transform: translateY(-6px) !important;
+  box-shadow: 0 20px 40px rgba(79, 70, 229, 0.08) !important;
+  border-color: rgba(99, 102, 241, 0.3) !important;
+}
+
+/* Premium links style */
+.wp-block-post-title a {
+  text-decoration: none !important;
+  color: #1e1b4b !important;
+  transition: color 0.3s !important;
+  font-weight: 700 !important;
+  line-height: 1.4 !important;
+}
+
+.wp-block-post-title a:hover {
+  color: #6366f1 !important;
+}
+
+/* Read more link styling */
+.wp-block-read-more {
+  display: inline-block !important;
+  margin-top: 15px !important;
+  color: #6366f1 !important;
+  text-decoration: none !important;
+  font-weight: 600 !important;
+  border-bottom: 2px solid transparent !important;
+  transition: all 0.3s !important;
+}
+
+.wp-block-read-more:hover {
+  border-color: #6366f1 !important;
+  padding-right: 4px !important;
+}
+</style>
+<!-- /wp:html -->
+
+<!-- wp:group {"align":"full","style":{"spacing":{"padding":{"top":"100px","bottom":"100px"}},"background":{"gradient":"linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%)"}},"textColor":"base","layout":{"type":"constrained"}} -->
 <div class="wp-block-group alignfull has-base-color has-text-color" style="padding-top:100px;padding-bottom:100px;background:linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%)">
   <!-- wp:heading {"textAlign":"center","level":1,"style":{"typography":{"fontSize":"3.5rem","fontWeight":"800"}}} -->
   <h1 class="wp-block-heading has-text-align-center" style="font-size:3.5rem;font-weight:800">Nuestro Blog</h1>
@@ -38,8 +123,8 @@ const blogPageGridHtml = `<!-- wp:group {"align":"full","style":{"spacing":{"pad
   <!-- wp:query {"queryId":25,"query":{"perPage":9,"pages":0,"offset":0,"postType":"post","order":"desc","orderBy":"date","author":"","search":"","exclude":[],"sticky":"","inherit":false,"taxQuery":{}},"displayLayout":{"type":"flex","columns":3},"layout":{"type":"constrained"}} -->
   <div class="wp-block-query">
     <!-- wp:post-template -->
-    <!-- wp:group {"style":{"spacing":{"padding":{"top":"30px","bottom":"30px","left":"25px","right":"25px"}},"border":{"radius":"16px","width":"1px","style":"solid","color":"#e2e8f0"}},"backgroundColor":"base-2","layout":{"type":"constrained"}} -->
-    <div class="wp-block-group has-base-2-background-color has-background" style="border-style:solid;border-width:1px;border-color:#e2e8f0;border-radius:16px;padding-top:30px;padding-bottom:30px;padding-left:25px;padding-right:25px;height:100%;box-shadow: 0 4px 15px rgba(0,0,0,0.02)">
+    <!-- wp:group {"className":"casting-blog-card","style":{"spacing":{"padding":{"top":"30px","bottom":"30px","left":"25px","right":"25px"}},"border":{"radius":"16px"}},"layout":{"type":"constrained"}} -->
+    <div class="wp-block-group casting-blog-card" style="border-radius:16px;padding-top:30px;padding-bottom:30px;padding-left:25px;padding-right:25px;height:100%">
       <!-- wp:post-title {"isLink":true,"style":{"typography":{"fontSize":"1.45rem","fontWeight":"700"}},"textColor":"contrast"} /-->
       <!-- wp:post-date {"style":{"typography":{"fontSize":"0.85rem"}},"textColor":"accent-2"} /-->
       <!-- wp:post-excerpt {"style":{"typography":{"fontSize":"0.95rem"}}} /-->
