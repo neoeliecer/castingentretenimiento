@@ -113,7 +113,7 @@ async function run() {
     `${siteUrl}/wp-content/uploads/2026/05/3.png`
   ];
 
-  const logoUrl = `${siteUrl}/wp-content/uploads/2026/05/logo.jpg`;
+  const logoUrl = `${siteUrl}/wp-content/uploads/2026/05/fondo.png`;
 
   // Create custom HTML block for the premium carousel slider with perfect auto-centering and responsive padding
   const sliderHtml = `<!-- wp:html -->
@@ -335,9 +335,9 @@ document.addEventListener('DOMContentLoaded', function() {
   const introductionHtml = `<!-- wp:group {"style":{"spacing":{"padding":{"top":"60px","bottom":"60px"}}},"layout":{"type":"constrained"}} -->
 <div class="wp-block-group" style="padding-top:60px;padding-bottom:60px">
   
-  <!-- wp:image {"align":"center","sizeSlug":"medium","linkDestination":"none","className":"is-style-rounded"} -->
-  <figure class="wp-block-image aligncenter size-medium is-style-rounded">
-    <img src="${logoUrl}" alt="Logo Fundación Casting Entretenimiento" style="width:140px;height:140px;border-radius:50%;object-fit:cover;box-shadow:0 8px 20px rgba(0,0,0,0.1);border:3px solid #6366f1" />
+  <!-- wp:image {"align":"center","sizeSlug":"large","linkDestination":"none"} -->
+  <figure class="wp-block-image aligncenter size-large">
+    <img src="${logoUrl}" alt="Logo Fundación Casting Entretenimiento" style="max-width:320px;height:auto;object-fit:contain;margin:0 auto;display:block;box-shadow: 0 4px 15px rgba(0,0,0,0.05);padding:10px;background:#ffffff;border-radius:12px" />
   </figure>
   <!-- /wp:image -->
 
