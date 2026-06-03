@@ -33,23 +33,27 @@ const quienesSomosContent = `<!-- wp:group {"align":"full","style":{"spacing":{"
 </div>
 <!-- /wp:group -->
 
-<!-- wp:group {"style":{"spacing":{"padding":{"top":"80px","bottom":"80px"}}},"layout":{"type":"constrained"}} -->
-<div class="wp-block-group" style="padding-top:80px;padding-bottom:80px">
-  <!-- wp:columns {"style":{"spacing":{"blockGap":{"top":"40px","left":"40px"}}}} -->
-  <div class="wp-block-columns">
+<!-- wp:group {"align":"wide","style":{"spacing":{"padding":{"top":"80px","bottom":"80px"}}},"layout":{"type":"constrained"}} -->
+<div class="wp-block-group alignwide" style="padding-top:80px;padding-bottom:80px">
+  <!-- wp:columns {"align":"wide","style":{"spacing":{"blockGap":{"top":"40px","left":"40px"}}}} -->
+  <div class="wp-block-columns alignwide">
     <!-- wp:column {"width":"50%"} -->
     <div class="wp-block-column" style="flex-basis:50%">
-      <!-- wp:heading {"level":2,"style":{"typography":{"fontSize":"2.2rem","fontWeight":"700"}},"textColor":"contrast"} -->
-      <h2 class="wp-block-heading has-contrast-color has-text-color" style="font-size:2.2rem;font-weight:700">Nuestra Historia y Propósito</h2>
-      <!-- /wp:heading -->
+      <!-- wp:group {"style":{"spacing":{"padding":{"top":"30px","bottom":"30px","left":"30px","right":"30px"}},"border":{"radius":"12px","width":"1px","style":"solid","color":"#e2e8f0"}},"backgroundColor":"base-2"} -->
+      <div class="wp-block-group has-base-2-background-color has-background" style="border-style:solid;border-width:1px;border-color:#e2e8f0;border-radius:12px;padding-top:30px;padding-bottom:30px;padding-left:30px;padding-right:30px">
+        <!-- wp:heading {"level":2,"style":{"typography":{"fontSize":"1.8rem","fontWeight":"700"}},"textColor":"contrast"} -->
+        <h2 class="wp-block-heading has-contrast-color has-text-color" style="font-size:1.8rem;font-weight:700;margin-top:0">Nuestra Historia y Propósito</h2>
+        <!-- /wp:heading -->
 
-      <!-- wp:paragraph {"style":{"typography":{"fontSize":"1.1rem"}}} -->
-      <p style="font-size:1.1rem;line-height:1.8">La <strong>Fundación Casting Entretenimiento</strong> nació en la ciudad de Cali con la firme convicción de que la cultura, la educación artística y el lenguaje audiovisual no deben ser privilegios, sino puentes de inclusión abiertos para todas las comunidades de nuestra sociedad.</p>
-      <!-- /wp:paragraph -->
+        <!-- wp:paragraph {"style":{"typography":{"fontSize":"1.1rem"}}} -->
+        <p style="font-size:1.1rem;line-height:1.8">La <strong>Fundación Casting Entretenimiento</strong> nació en la ciudad de Cali con la firme convicción de que la cultura, la educación artística y el lenguaje audiovisual no deben ser privilegios, sino puentes de inclusión abiertos para todas las comunidades de nuestra sociedad.</p>
+        <!-- /wp:paragraph -->
 
-      <!-- wp:paragraph {"style":{"typography":{"fontSize":"1.1rem"}}} -->
-      <p style="font-size:1.1rem;line-height:1.8">Nos enfocamos en capacitar, empoderar y visibilizar a individuos de diversos contextos, ofreciéndoles espacios de alta calidad humana y técnica. Promovemos el amor propio, el respeto mutuo y la autoconfianza a través del teatro, la actuación y la expresión cinematográfica, contribuyendo de manera activa y positiva al desarrollo socio-cultural y de movilidad social de nuestro país.</p>
-      <!-- /wp:paragraph -->
+        <!-- wp:paragraph {"style":{"typography":{"fontSize":"1.1rem"}}} -->
+        <p style="font-size:1.1rem;line-height:1.8;margin-bottom:0">Nos enfocamos en capacitar, empoderar y visibilizar a individuos de diversos contextos, ofreciéndoles espacios de alta calidad humana y técnica. Promovemos el amor propio, el respeto mutuo y la autoconfianza a través de las artes escénicas, contribuyendo de manera activa y positiva al desarrollo socio-cultural y de movilidad social de nuestro país.</p>
+        <!-- /wp:paragraph -->
+      </div>
+      <!-- /wp:group -->
     </div>
     <!-- /wp:column -->
 
@@ -57,15 +61,15 @@ const quienesSomosContent = `<!-- wp:group {"align":"full","style":{"spacing":{"
     <div class="wp-block-column" style="flex-basis:50%">
       <!-- wp:group {"style":{"spacing":{"padding":{"top":"30px","bottom":"30px","left":"30px","right":"30px"}},"border":{"radius":"12px","width":"1px","style":"solid","color":"#e2e8f0"}},"backgroundColor":"base-2"} -->
       <div class="wp-block-group has-base-2-background-color has-background" style="border-style:solid;border-width:1px;border-color:#e2e8f0;border-radius:12px;padding-top:30px;padding-bottom:30px;padding-left:30px;padding-right:30px">
-        <!-- wp:heading {"level":3,"style":{"typography":{"fontSize":"1.5rem","fontWeight":"600"}}} -->
-        <h3 class="wp-block-heading" style="font-size:1.5rem;font-weight:600">Nuestros Pilares</h3>
+        <!-- wp:heading {"level":3,"style":{"typography":{"fontSize":"1.8rem","fontWeight":"700"}},"textColor":"contrast"} -->
+        <h3 class="wp-block-heading has-contrast-color has-text-color" style="font-size:1.8rem;font-weight:700;margin-top:0">Nuestros Pilares</h3>
         <!-- /wp:heading -->
 
         <!-- wp:list {"style":{"spacing":{"blockGap":"20px"}}} -->
-        <ul style="list-style-type:none;padding-left:0">
-          <li>🎭 <strong>Formación Artística Integral:</strong> Talleres accesibles de artes escénicas para el desarrollo humano, corporal y emocional.</li>
-          <li>🎬 <strong>Producción Audiovisual Social:</strong> Creación de cortometrajes y contenidos que visibilizan realidades locales y empoderan talentos diversos.</li>
-          <li>🌟 <strong>Eventos Inclusivos de Alta Calidad:</strong> Espacios de encuentro donde el arte se convierte en el lenguaje universal de la comunidad caleña.</li>
+        <ul style="list-style-type:none;padding-left:0;font-size:1.1rem;line-height:1.8;margin-bottom:0">
+          <li style="margin-bottom:20px">🎭 <strong>Formación Artística Integral:</strong> Talleres accesibles de artes escénicas para el desarrollo humano, corporal y emocional.</li>
+          <li style="margin-bottom:20px">🎬 <strong>Producción Audiovisual Social:</strong> Creación de cortometrajes y contenidos que visibilizan realidades locales y empoderan talentos diversos.</li>
+          <li style="margin-bottom:0">🌟 <strong>Eventos Inclusivos de Alta Calidad:</strong> Espacios de encuentro donde el arte se convierte en el lenguaje universal.</li>
         </ul>
         <!-- /wp:list -->
       </div>
@@ -308,30 +312,58 @@ const documentosLegalesContent = `<!-- wp:group {"align":"full","style":{"spacin
 <!-- /wp:group -->`;
 
 async function createPage(title, slug, content) {
-  console.log(`Publishing page: "${title}"...`);
+  console.log(`Checking if page "${title}" with slug "${slug}" already exists...`);
   try {
-    const response = await fetch(`${siteUrl}/wp-json/wp/v2/pages`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Basic ${authString}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        title,
-        slug,
-        content,
-        status: 'publish'
-      })
+    const searchRes = await fetch(`${siteUrl}/wp-json/wp/v2/pages?slug=${slug}`, {
+      headers: { 'Authorization': `Basic ${authString}` }
     });
-    const result = await response.json();
-    if (response.ok) {
-      console.log(`✅ Success! Page "${title}" published at: ${result.link}`);
-      return result;
+    const pages = await searchRes.json();
+    
+    if (pages.length > 0) {
+      const pageId = pages[0].id;
+      console.log(`Page "${title}" exists with ID: ${pageId}. Updating page content...`);
+      const response = await fetch(`${siteUrl}/wp-json/wp/v2/pages/${pageId}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${authString}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          content
+        })
+      });
+      const result = await response.json();
+      if (response.ok) {
+        console.log(`✅ Success! Page "${title}" updated at: ${result.link}`);
+        return result;
+      } else {
+        console.error(`❌ Failed to update page "${title}":`, result.message || JSON.stringify(result));
+      }
     } else {
-      console.error(`❌ Failed to publish page "${title}":`, result.message || JSON.stringify(result));
+      console.log(`Page "${title}" does not exist. Creating a new one...`);
+      const response = await fetch(`${siteUrl}/wp-json/wp/v2/pages`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${authString}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          title,
+          slug,
+          content,
+          status: 'publish'
+        })
+      });
+      const result = await response.json();
+      if (response.ok) {
+        console.log(`✅ Success! Page "${title}" published at: ${result.link}`);
+        return result;
+      } else {
+        console.error(`❌ Failed to publish page "${title}":`, result.message || JSON.stringify(result));
+      }
     }
   } catch (error) {
-    console.error(`❌ Error publishing page "${title}":`, error.message);
+    console.error(`❌ Error managing page "${title}":`, error.message);
   }
 }
 

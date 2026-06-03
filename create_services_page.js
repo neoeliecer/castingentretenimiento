@@ -32,8 +32,8 @@ const servicesPageHtml = `<!-- wp:group {"align":"full","style":{"spacing":{"pad
 </div>
 <!-- /wp:group -->
 
-<!-- wp:group {"style":{"spacing":{"padding":{"top":"80px","bottom":"80px"}}},"layout":{"type":"constrained"}} -->
-<div class="wp-block-group" style="padding-top:80px;padding-bottom:80px">
+<!-- wp:group {"align":"wide","style":{"spacing":{"padding":{"top":"80px","bottom":"80px"}}},"layout":{"type":"constrained"}} -->
+<div class="wp-block-group alignwide" style="padding-top:80px;padding-bottom:80px">
   <!-- wp:columns {"style":{"spacing":{"blockGap":{"top":"30px","left":"30px"}}}} -->
   <div class="wp-block-columns">
     <!-- wp:column {"width":"33.33%"} -->

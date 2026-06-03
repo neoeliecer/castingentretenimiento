@@ -20,6 +20,57 @@ if (!appPassword) {
 
 const authString = Buffer.from(`${username}:${appPassword}`).toString('base64');
 
+async function getOrUploadFondo() {
+  console.log('🔍 Searching for existing "fondo" image in WordPress Media Library...');
+  try {
+    const searchRes = await fetch(`${siteUrl}/wp-json/wp/v2/media?search=fondo&per_page=10`, {
+      headers: { 'Authorization': `Basic ${authString}` }
+    });
+    const mediaItems = await searchRes.json();
+    const perfectMatch = mediaItems.find(item => item.slug === 'fondo' || item.slug === 'fondo-1');
+    if (perfectMatch) {
+      console.log(`✅ Found existing fondo image: ${perfectMatch.source_url}`);
+      return perfectMatch.source_url;
+    }
+    if (mediaItems.length > 0) {
+      console.log(`✅ Found similar fondo image: ${mediaItems[0].source_url}`);
+      return mediaItems[0].source_url;
+    }
+  } catch (e) {
+    console.warn('⚠️ Error searching for existing media, will try uploading:', e.message);
+  }
+
+  console.log('📤 Uploading local fondo.png to WordPress...');
+  const filePath = path.join(__dirname, 'imagenes', 'fondo.png');
+  if (!fs.existsSync(filePath)) {
+    console.error('❌ Local fondo.png not found at:', filePath);
+    return `${siteUrl}/wp-content/uploads/2026/05/fondo.png`;
+  }
+
+  const imageBuffer = fs.readFileSync(filePath);
+  try {
+    const uploadRes = await fetch(`${siteUrl}/wp-json/wp/v2/media`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${authString}`,
+        'Content-Disposition': 'attachment; filename="fondo.png"',
+        'Content-Type': 'image/png'
+      },
+      body: imageBuffer
+    });
+
+    const data = await uploadRes.json();
+    if (uploadRes.ok) {
+      console.log(`✅ Success! fondo.png uploaded: ${data.source_url}`);
+      return data.source_url;
+    }
+  } catch (e) {
+    console.error('❌ Error uploading fondo.png:', e.message);
+  }
+
+  return `${siteUrl}/wp-content/uploads/2026/05/fondo.png`;
+}
+
 async function uploadLocalImages() {
   const photosDir = path.join(__dirname, 'fotos de carrrusel');
   let uploadedUrls = [];
@@ -113,248 +164,169 @@ async function run() {
     `${siteUrl}/wp-content/uploads/2026/05/3.png`
   ];
 
-  const logoUrl = `${siteUrl}/wp-content/uploads/2026/05/fondo.png`;
+  const logoUrl = await getOrUploadFondo();
 
-  // Create custom HTML block for the premium carousel slider with perfect auto-centering and responsive padding
-  const sliderHtml = `<!-- wp:html -->
-<div class="casting-slider-container">
-  <div class="casting-slider">
-    <!-- Slide 1 -->
-    <div class="casting-slide active" style="background-image: url('${imageUrls[0]}')">
-      <div class="casting-slide-overlay"></div>
-      <div class="casting-slide-content">
-        <h2>Formación Escénica Transformadora</h2>
-        <p>Utilizamos el teatro y la expresión corporal como herramientas clave para la inclusión, el amor propio y el desarrollo humano.</p>
-        <a href="/quienes-somos/" class="casting-btn">Conócenos Más</a>
-      </div>
-    </div>
-    <!-- Slide 2 -->
-    <div class="casting-slide" style="background-image: url('${imageUrls[1]}')">
-      <div class="casting-slide-overlay"></div>
-      <div class="casting-slide-content">
-        <h2>Creación Audiovisual con Impacto Social</h2>
-        <p>A través de productos audiovisuales creativos, visibilizamos realidades locales e impulsamos el talento de nuestras comunidades.</p>
-        <a href="/mision-vision/" class="casting-btn">Nuestra Misión y Visión</a>
-      </div>
-    </div>
-    <!-- Slide 3 -->
-    <div class="casting-slide" style="background-image: url('${imageUrls[2]}')">
-      <div class="casting-slide-overlay"></div>
-      <div class="casting-slide-content">
-        <h2>Eventos Inclusivos y Comunitarios</h2>
-        <p>Promovemos la movilidad social, el respeto mutuo y la transformación cultural en la sociedad caleña y colombiana.</p>
-        <a href="/documentos-legales/" class="casting-btn">Transparencia Institucional</a>
-      </div>
-    </div>
-  </div>
+  // Create custom HTML block for the premium video background hero header
+  const videoHeroHtml = `<!-- wp:html -->
+<div class="casting-video-hero-container">
+  <video class="casting-video-bg" autoplay loop muted playsinline>
+    <source src="https://dev-castingentretenimiento.pantheonsite.io/wp-content/uploads/2026/05/Cabezote-casting.mp4" type="video/mp4">
+    Tu navegador no soporta el elemento de video.
+  </video>
   
-  <button class="slider-arrow prev" onclick="moveCastingSlide(-1)">&#10094;</button>
-  <button class="slider-arrow next" onclick="moveCastingSlide(1)">&#10095;</button>
+  <div class="casting-video-hero-overlay"></div>
   
-  <div class="slider-dots">
-    <span class="dot active" onclick="setCastingSlide(0)"></span>
-    <span class="dot" onclick="setCastingSlide(1)"></span>
-    <span class="dot" onclick="setCastingSlide(2)"></span>
+  <div class="casting-video-hero-content">
+    <h2>Formación Escénica & Creación Audiovisual</h2>
+    <p>Utilizamos el teatro y la expresión corporal como herramientas clave para el desarrollo humano, el amor propio y la transformación cultural.</p>
+    <div class="casting-hero-buttons">
+      <a href="/quienes-somos/" class="casting-btn primary">Conócenos Más</a>
+      <a href="/servicios/" class="casting-btn secondary">Nuestros Servicios</a>
+    </div>
   </div>
 </div>
 
 <style>
-.casting-slider-container {
+.casting-video-hero-container {
   width: 100%;
-  max-width: 1200px; /* Large premium widescreen width */
-  margin: 0 auto 60px auto; /* PERFECT AUTO-CENTERING ON THE PAGE! */
+  max-width: 1200px;
+  margin: 0 auto 60px auto;
   height: 600px;
   position: relative;
   overflow: hidden;
   border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-}
-.casting-slider {
-  width: 100%;
-  height: 100%;
-  position: relative;
-}
-.casting-slide {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-size: cover;
-  background-position: center;
-  opacity: 0;
-  transition: opacity 1s ease-in-out;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.2);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1;
+  background-color: #0b132b;
 }
-.casting-slide.active {
-  opacity: 1;
-  z-index: 2;
-}
-.casting-slide-overlay {
+
+.casting-video-bg {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, rgba(11, 21, 40, 0.85) 0%, rgba(30, 27, 75, 0.45) 100%);
+  object-fit: cover;
   z-index: 1;
 }
-.casting-slide-content {
-  position: relative;
+
+.casting-video-hero-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(11, 19, 43, 0.9) 0%, rgba(30, 27, 75, 0.5) 100%);
   z-index: 2;
+}
+
+.casting-video-hero-content {
+  position: relative;
+  z-index: 3;
   text-align: center;
   color: #ffffff;
-  max-width: 800px;
-  padding: 0 30px;
-  transform: translateY(25px);
-  transition: transform 0.8s ease;
+  max-width: 850px;
+  padding: 0 40px;
+  animation: castingHeroFadeInUp 1s ease-out;
 }
-.casting-slide.active .casting-slide-content {
-  transform: translateY(0);
-}
-.casting-slide-content h2 {
-  font-size: 3rem;
-  font-weight: 800;
-  margin-bottom: 20px;
+
+.casting-video-hero-content h2 {
+  font-size: clamp(2rem, 3.5vw, 3.5rem) !important;
+  font-weight: 800 !important;
+  margin-bottom: 20px !important;
   color: #ffffff !important;
-  text-shadow: 0 3px 6px rgba(0,0,0,0.4);
+  text-shadow: 0 4px 12px rgba(0,0,0,0.5) !important;
+  line-height: 1.2 !important;
+  letter-spacing: -1px !important;
 }
-.casting-slide-content p {
-  font-size: 1.3rem;
-  line-height: 1.6;
-  margin-bottom: 30px;
+
+.casting-video-hero-content p {
+  font-size: clamp(1.05rem, 1.25vw, 1.35rem) !important;
+  line-height: 1.6 !important;
+  margin-bottom: 35px !important;
   color: #f1f5f9 !important;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  text-shadow: 0 2px 6px rgba(0,0,0,0.5) !important;
 }
+
+.casting-hero-buttons {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
 .casting-btn {
   display: inline-block;
-  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-  color: #ffffff !important;
-  text-decoration: none !important;
-  padding: 13px 34px;
-  font-weight: 600;
+  padding: 14px 36px;
+  font-weight: 700;
   border-radius: 30px;
-  transition: transform 0.2s, box-shadow 0.2s;
-  box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none !important;
+  font-size: 0.95rem;
 }
-.casting-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(79, 70, 229, 0.5);
+
+.casting-btn.primary {
+  background: linear-gradient(135deg, #00b4d8 0%, #0077b6 100%);
+  color: #ffffff !important;
+  box-shadow: 0 4px 15px rgba(0, 180, 216, 0.3);
 }
-.slider-arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.15);
+
+.casting-btn.primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 180, 216, 0.5);
+}
+
+.casting-btn.secondary {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  color: #ffffff !important;
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(255,255,255,0.25);
-  color: white;
-  width: 50px;
-  height: 50px;
-  cursor: pointer;
-  z-index: 3;
-  border-radius: 50%;
-  font-size: 20px;
-  transition: background 0.3s, transform 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
-.slider-arrow:hover {
-  background: rgba(255, 255, 255, 0.35);
-  transform: translateY(-50%) scale(1.05);
+
+.casting-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.8);
+  transform: translateY(-3px);
 }
-.slider-arrow.prev { left: 25px; }
-.slider-arrow.next { right: 25px; }
-.slider-dots {
-  position: absolute;
-  bottom: 25px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 12px;
-  z-index: 3;
-}
-.dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.4);
-  cursor: pointer;
-  transition: background 0.3s, width 0.3s;
-}
-.dot.active {
-  background: #6366f1;
-  width: 28px;
-  border-radius: 10px;
+
+@keyframes castingHeroFadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  let current = 0;
-  const slides = document.querySelectorAll('.casting-slide');
-  const dots = document.querySelectorAll('.dot');
-  if (!slides.length) return;
-
-  function show(index) {
-    if (index >= slides.length) current = 0;
-    else if (index < 0) current = slides.length - 1;
-    else current = index;
-
-    for (let i = 0; i < slides.length; i++) {
-      if (i === current) {
-        slides[i].classList.add('active');
-        if (dots[i]) dots[i].classList.add('active');
-      } else {
-        slides[i].classList.remove('active');
-        if (dots[i]) dots[i].classList.remove('active');
-      }
-    }
-  }
-
-  window.moveCastingSlide = function(step) {
-    show(current + step);
-  };
-  window.setCastingSlide = function(index) {
-    show(index);
-  };
-
-  // Fixed Autoplay: moves on its own every 4 seconds
-  setInterval(function() {
-    show(current + 1);
-  }, 4000);
-});
-</script>
 <!-- /wp:html -->`;
 
-  const introductionHtml = `<!-- wp:group {"style":{"spacing":{"padding":{"top":"60px","bottom":"60px"}}},"layout":{"type":"constrained"}} -->
-<div class="wp-block-group" style="padding-top:60px;padding-bottom:60px">
+  const introductionHtml = `<!-- wp:group {"align":"full","style":{"spacing":{"padding":{"top":"60px","bottom":"60px"}},"background":{"color":"#0b132b"}},"textColor":"base","layout":{"type":"constrained"}} -->
+<div class="wp-block-group alignfull has-base-color has-text-color" style="padding-top:60px;padding-bottom:60px;background-color:#0b132b">
   
   <!-- wp:image {"align":"center","sizeSlug":"large","linkDestination":"none"} -->
   <figure class="wp-block-image aligncenter size-large">
-    <img src="${logoUrl}" alt="Logo Fundación Casting Entretenimiento" style="max-width:320px;height:auto;object-fit:contain;margin:0 auto;display:block;box-shadow: 0 4px 15px rgba(0,0,0,0.05);padding:10px;background:#ffffff;border-radius:12px" />
+    <img src="${logoUrl}" alt="Logo Fundación Casting Entretenimiento" style="max-width:600px;height:auto;object-fit:contain;margin:0 auto;display:block;box-shadow: 0 4px 15px rgba(0, 180, 216, 0.15);padding:10px;background:rgba(255,255,255,0.05);border-radius:12px;border:1px solid rgba(0,180,216,0.2)" />
   </figure>
   <!-- /wp:image -->
 
-  <!-- wp:heading {"textAlign":"center","level":2,"style":{"spacing":{"margin":{"top":"25px"}},"typography":{"fontSize":"2.4rem","fontWeight":"700"}},"textColor":"contrast"} -->
-  <h2 class="wp-block-heading has-text-align-center has-contrast-color has-text-color" style="margin-top:25px;font-size:2.4rem;font-weight:700">Bienvenidos a la Fundación Casting Entretenimiento</h2>
+  <!-- wp:heading {"textAlign":"center","level":2,"style":{"spacing":{"margin":{"top":"25px"}},"typography":{"fontSize":"2.4rem","fontWeight":"700"}},"textColor":"base"} -->
+  <h2 class="wp-block-heading has-text-align-center has-base-color has-text-color" style="margin-top:25px;font-size:2.4rem;font-weight:700">Bienvenidos a la Fundación Casting Entretenimiento</h2>
   <!-- /wp:heading -->
 
-  <!-- wp:paragraph {"align":"center","style":{"typography":{"fontSize":"1.2rem"}}} -->
-  <p class="has-text-align-center" style="font-size:1.2rem;max-width:800px;margin:20px auto 0 auto;line-height:1.8">Somos una organización dedicada a generar espacios creativos, artísticos e inclusivos a través del teatro, la actuación y la producción de contenidos audiovisuales. Creemos firmemente que el arte transforma vidas, fortalece el amor propio y abre caminos para la movilidad social y el desarrollo socio-cultural de nuestro país.</p>
+  <!-- wp:paragraph {"align":"center","style":{"typography":{"fontSize":"1.2rem"}},"textColor":"base"} -->
+  <p class="has-text-align-center has-base-color has-text-color" style="font-size:1.2rem;max-width:800px;margin:20px auto 0 auto;line-height:1.8;opacity:0.9">Somos una organización dedicada a generar espacios creativos, artísticos e inclusivos a través del teatro, la actuación y la producción de contenidos audiovisuales. Creemos firmemente que el arte transforma vidas, fortalece el amor propio y abre caminos para la movilidad social y el desarrollo socio-cultural de nuestro país.</p>
   <!-- /wp:paragraph -->
 </div>
 <!-- /wp:group -->
 
-<!-- wp:group {"align":"full","style":{"spacing":{"padding":{"top":"80px","bottom":"80px"}},"background":{"gradient":"linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)"}},"layout":{"type":"constrained"}} -->
-<div class="wp-block-group alignfull" style="padding-top:80px;padding-bottom:80px;background:linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)">
-  <!-- wp:heading {"textAlign":"center","level":2,"style":{"typography":{"fontSize":"2.2rem","fontWeight":"700"}},"textColor":"contrast"} -->
-  <h2 class="wp-block-heading has-text-align-center has-contrast-color has-text-color" style="font-size:2.2rem;font-weight:700">Explora Nuestra Fundación</h2>
+<!-- wp:group {"align":"full","style":{"spacing":{"padding":{"top":"80px","bottom":"80px"}},"background":{"gradient":"linear-gradient(135deg, #090e1f 0%, #0b132b 100%)"}},"textColor":"base","layout":{"type":"constrained"}} -->
+<div class="wp-block-group alignfull has-base-color has-text-color" style="padding-top:80px;padding-bottom:80px;background:linear-gradient(135deg, #090e1f 0%, #0b132b 100%)">
+  <!-- wp:heading {"textAlign":"center","level":2,"style":{"typography":{"fontSize":"2.2rem","fontWeight":"700"}},"textColor":"base"} -->
+  <h2 class="wp-block-heading has-text-align-center has-base-color has-text-color" style="font-size:2.2rem;font-weight:700">Explora Nuestra Fundación</h2>
   <!-- /wp:heading -->
 
   <!-- wp:spacer {"height":"40px"} -->
@@ -365,19 +337,19 @@ document.addEventListener('DOMContentLoaded', function() {
   <div class="wp-block-columns">
     <!-- wp:column {"width":"33.33%"} -->
     <div class="wp-block-column" style="flex-basis:33.33%">
-      <!-- wp:group {"style":{"spacing":{"padding":{"top":"30px","bottom":"30px","left":"30px","right":"30px"}},"border":{"radius":"12px","width":"1px","style":"solid","color":"#e2e8f0"}},"backgroundColor":"base"} -->
-      <div class="wp-block-group has-base-background-color has-background" style="border-style:solid;border-width:1px;border-color:#e2e8f0;border-radius:12px;padding-top:30px;padding-bottom:30px;padding-left:30px;padding-right:30px">
+      <!-- wp:group {"style":{"spacing":{"padding":{"top":"30px","bottom":"30px","left":"30px","right":"30px"}},"border":{"radius":"12px","width":"1px","style":"solid","color":"rgba(0,180,216,0.3)"}},"backgroundColor":"base-2"} -->
+      <div class="wp-block-group has-base-2-background-color has-background" style="border-style:solid;border-width:1px;border-color:rgba(0,180,216,0.3);border-radius:12px;padding-top:30px;padding-bottom:30px;padding-left:30px;padding-right:30px">
         <!-- wp:paragraph {"style":{"typography":{"fontSize":"2.5rem"}}} -->
         <p style="font-size:2.5rem;margin:0 0 15px 0">👥</p>
         <!-- /wp:paragraph -->
-        <!-- wp:heading {"level":3,"style":{"typography":{"fontSize":"1.5rem","fontWeight":"600"}}} -->
-        <h3 class="wp-block-heading" style="font-size:1.5rem;font-weight:600">Quiénes Somos</h3>
+        <!-- wp:heading {"level":3,"style":{"typography":{"fontSize":"1.5rem","fontWeight":"600"}},"textColor":"base"} -->
+        <h3 class="wp-block-heading has-base-color has-text-color" style="font-size:1.5rem;font-weight:600">Quiénes Somos</h3>
         <!-- /wp:heading -->
-        <!-- wp:paragraph {"style":{"typography":{"fontSize":"1rem"}}} -->
-        <p style="font-size:1rem;line-height:1.6;color:#475569">Conoce nuestra historia nacida en Cali, nuestro propósito fundamental y los pilares escénicos y sociales que nos definen.</p>
+        <!-- wp:paragraph {"style":{"typography":{"fontSize":"1rem"}},"textColor":"base"} -->
+        <p class="has-base-color has-text-color" style="font-size:1rem;line-height:1.6;opacity:0.8">Conoce nuestra historia nacida en Cali, nuestro propósito fundamental y los pilares escénicos y sociales que nos definen.</p>
         <!-- /wp:paragraph -->
         <!-- wp:buttons -->
-        <div class="wp-block-buttons" style="margin-top:20px"><div class="wp-block-button"><a class="wp-block-button__link has-contrast-background-color has-base-color has-text-color has-background" href="/quienes-somos/" style="border-radius:6px;font-size:0.95rem;font-weight:600;padding:10px 20px">Conocer Más</a></div></div>
+        <div class="wp-block-buttons" style="margin-top:20px"><div class="wp-block-button"><a class="wp-block-button__link has-base-color has-text-color" href="/quienes-somos/" style="background:#00b4d8;border-radius:6px;font-size:0.95rem;font-weight:600;padding:10px 20px">Conocer Más</a></div></div>
         <!-- /wp:buttons -->
       </div>
       <!-- /wp:group -->
@@ -386,19 +358,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     <!-- wp:column {"width":"33.33%"} -->
     <div class="wp-block-column" style="flex-basis:33.33%">
-      <!-- wp:group {"style":{"spacing":{"padding":{"top":"30px","bottom":"30px","left":"30px","right":"30px"}},"border":{"radius":"12px","width":"1px","style":"solid","color":"#e2e8f0"}},"backgroundColor":"base"} -->
-      <div class="wp-block-group has-base-background-color has-background" style="border-style:solid;border-width:1px;border-color:#e2e8f0;border-radius:12px;padding-top:30px;padding-bottom:30px;padding-left:30px;padding-right:30px">
+      <!-- wp:group {"style":{"spacing":{"padding":{"top":"30px","bottom":"30px","left":"30px","right":"30px"}},"border":{"radius":"12px","width":"1px","style":"solid","color":"rgba(0,180,216,0.3)"}},"backgroundColor":"base-2"} -->
+      <div class="wp-block-group has-base-2-background-color has-background" style="border-style:solid;border-width:1px;border-color:rgba(0,180,216,0.3);border-radius:12px;padding-top:30px;padding-bottom:30px;padding-left:30px;padding-right:30px">
         <!-- wp:paragraph {"style":{"typography":"fontSize":"2.5rem"}}} -->
         <p style="font-size:2.5rem;margin:0 0 15px 0">🎯</p>
         <!-- /wp:paragraph -->
-        <!-- wp:heading {"level":3,"style":{"typography":{"fontSize":"1.5rem","fontWeight":"600"}}} -->
-        <h3 class="wp-block-heading" style="font-size:1.5rem;font-weight:600">Misión y Visión</h3>
+        <!-- wp:heading {"level":3,"style":{"typography":{"fontSize":"1.5rem","fontWeight":"600"}},"textColor":"base"} -->
+        <h3 class="wp-block-heading has-base-color has-text-color" style="font-size:1.5rem;font-weight:600">Misión y Visión</h3>
         <!-- /wp:heading -->
-        <!-- wp:paragraph {"style":{"typography":{"fontSize":"1rem"}}} -->
-        <p style="font-size:1rem;line-height:1.6;color:#475569">Descubre cómo el arte escénico y la creación audiovisual se convierten en el motor del cambio cultural y empoderamiento de Colombia.</p>
+        <!-- wp:paragraph {"style":{"typography":{"fontSize":"1rem"}},"textColor":"base"} -->
+        <p class="has-base-color has-text-color" style="font-size:1rem;line-height:1.6;opacity:0.8">Descubre cómo el arte escénico y la creación audiovisual se convierten en el motor del cambio cultural y empoderamiento de Colombia.</p>
         <!-- /wp:paragraph -->
         <!-- wp:buttons -->
-        <div class="wp-block-buttons" style="margin-top:20px"><div class="wp-block-button"><a class="wp-block-button__link has-contrast-background-color has-base-color has-text-color has-background" href="/mision-vision/" style="border-radius:6px;font-size:0.95rem;font-weight:600;padding:10px 20px">Nuestra Misión</a></div></div>
+        <div class="wp-block-buttons" style="margin-top:20px"><div class="wp-block-button"><a class="wp-block-button__link has-base-color has-text-color" href="/mision-vision/" style="background:#00b4d8;border-radius:6px;font-size:0.95rem;font-weight:600;padding:10px 20px">Nuestra Misión</a></div></div>
         <!-- /wp:buttons -->
       </div>
       <!-- /wp:group -->
@@ -407,19 +379,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     <!-- wp:column {"width":"33.33%"} -->
     <div class="wp-block-column" style="flex-basis:33.33%">
-      <!-- wp:group {"style":{"spacing":{"padding":{"top":"30px","bottom":"30px","left":"30px","right":"30px"}},"border":{"radius":"12px","width":"1px","style":"solid","color":"#e2e8f0"}},"backgroundColor":"base"} -->
-      <div class="wp-block-group has-base-background-color has-background" style="border-style:solid;border-width:1px;border-color:#e2e8f0;border-radius:12px;padding-top:30px;padding-bottom:30px;padding-left:30px;padding-right:30px">
+      <!-- wp:group {"style":{"spacing":{"padding":{"top":"30px","bottom":"30px","left":"30px","right":"30px"}},"border":{"radius":"12px","width":"1px","style":"solid","color":"rgba(0,180,216,0.3)"}},"backgroundColor":"base-2"} -->
+      <div class="wp-block-group has-base-2-background-color has-background" style="border-style:solid;border-width:1px;border-color:rgba(0,180,216,0.3);border-radius:12px;padding-top:30px;padding-bottom:30px;padding-left:30px;padding-right:30px">
         <!-- wp:paragraph {"style":{"typography":{"fontSize":"2.5rem"}}} -->
         <p style="font-size:2.5rem;margin:0 0 15px 0">📜</p>
         <!-- /wp:paragraph -->
-        <!-- wp:heading {"level":3,"style":{"typography":{"fontSize":"1.5rem","fontWeight":"600"}}} -->
-        <h3 class="wp-block-heading" style="font-size:1.5rem;font-weight:600">Documentos Legales</h3>
+        <!-- wp:heading {"level":3,"style":{"typography":{"fontSize":"1.5rem","fontWeight":"600"}},"textColor":"base"} -->
+        <h3 class="wp-block-heading has-base-color has-text-color" style="font-size:1.5rem;font-weight:600">Documentos Legales</h3>
         <!-- /wp:heading -->
-        <!-- wp:paragraph {"style":{"typography":{"fontSize":"1rem"}}} -->
-        <p style="font-size:1rem;line-height:1.6;color:#475569">Consultas y descargas de nuestros estatutos, RUT e inscripciones legales, demostrando total transparencia y pulcritud fiscal.</p>
+        <!-- wp:paragraph {"style":{"typography":{"fontSize":"1rem"}},"textColor":"base"} -->
+        <p class="has-base-color has-text-color" style="font-size:1rem;line-height:1.6;opacity:0.8">Consultas y descargas de nuestros estatutos, RUT e inscripciones legales, demostrando total transparencia y pulcritud fiscal.</p>
         <!-- /wp:paragraph -->
         <!-- wp:buttons -->
-        <div class="wp-block-buttons" style="margin-top:20px"><div class="wp-block-button"><a class="wp-block-button__link has-contrast-background-color has-base-color has-text-color has-background" href="/documentos-legales/" style="border-radius:6px;font-size:0.95rem;font-weight:600;padding:10px 20px">Ver Documentos</a></div></div>
+        <div class="wp-block-buttons" style="margin-top:20px"><div class="wp-block-button"><a class="wp-block-button__link has-base-color has-text-color" href="/documentos-legales/" style="background:#00b4d8;border-radius:6px;font-size:0.95rem;font-weight:600;padding:10px 20px">Ver Documentos</a></div></div>
         <!-- /wp:buttons -->
       </div>
       <!-- /wp:group -->
@@ -430,7 +402,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 <!-- /wp:group -->`;
 
-  const fullContent = `${sliderHtml}\n${introductionHtml}`;
+  const fullContent = `${videoHeroHtml}\n${introductionHtml}`;
 
   console.log('Querying Homepage page ID...');
   let homePageId;
@@ -477,7 +449,7 @@ document.addEventListener('DOMContentLoaded', function() {
       body: JSON.stringify({
         show_on_front: 'page',
         page_on_front: homePageId,
-        page_for_posts: blogPageId
+        page_for_posts: 0 // Set to 0 to keep the blog custom Gutenberg grid active!
       })
     });
     if (settingsRes.ok) {

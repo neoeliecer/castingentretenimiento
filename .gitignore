@@ -2,4 +2,6 @@ node_modules/
 .env
 .DS_Store
 *.log
-scratch/
+scratch/*
+!scratch/published_posts.json
+!scratch/published_convocatorias.json

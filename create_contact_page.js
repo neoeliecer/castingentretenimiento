@@ -50,7 +50,7 @@ const contactPageHtml = `<!-- wp:group {"align":"full","style":{"spacing":{"padd
       <!-- /wp:paragraph -->
 
       <!-- wp:paragraph {"style":{"typography":{"fontSize":"1.1rem"}}} -->
-      <p style="font-size:1.1rem;line-height:1.8">🟢 <strong>WhatsApp Corporativo:</strong><br><a href="https://wa.me/584240000000" target="_blank" rel="noopener noreferrer" style="color:#6366f1;text-decoration:none;font-weight:600">Haz clic aquí para chatear</a></p>
+      <p style="font-size:1.1rem;line-height:1.8">🟢 <strong>WhatsApp Corporativo:</strong><br><a href="https://wa.me/573153866331" target="_blank" rel="noopener noreferrer" style="color:#6366f1;text-decoration:none;font-weight:600">Haz clic aquí para chatear (+57 315 386 6331)</a></p>
       <!-- /wp:paragraph -->
 
       <!-- wp:paragraph {"style":{"typography":{"fontSize":"1.1rem"}}} -->
