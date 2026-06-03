@@ -177,7 +177,7 @@ async function run() {
   <div class="casting-video-hero-overlay"></div>
   
   <div class="casting-video-hero-content">
-    <h2>Formación Escénica & Creación Audiovisual</h2>
+    <h2>Fundación Casting Entretenimiento</h2>
     <p>Utilizamos el teatro y la expresión corporal como herramientas clave para el desarrollo humano, el amor propio y la transformación cultural.</p>
     <div class="casting-hero-buttons">
       <a href="/quienes-somos/" class="casting-btn primary">Conócenos Más</a>
