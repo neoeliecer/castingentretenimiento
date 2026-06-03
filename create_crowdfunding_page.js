@@ -23,7 +23,7 @@ const authString = Buffer.from(`${username}:${appPassword}`).toString('base64');
 const crowdfundingPageHtml = `<!-- wp:group {"align":"full","style":{"spacing":{"padding":{"top":"100px","bottom":"100px"}},"background":{"gradient":"linear-gradient(135deg, #1e1b4b 0%, #111827 100%)"}},"textColor":"base","layout":{"type":"constrained"}} -->
 <div class="wp-block-group alignfull has-base-color has-text-color" style="padding-top:100px;padding-bottom:100px;background:linear-gradient(135deg, #1e1b4b 0%, #111827 100%)">
   <!-- wp:heading {"textAlign":"center","level":1,"style":{"typography":{"fontSize":"3.5rem","fontWeight":"800"}}} -->
-  <h1 class="wp-block-heading has-text-align-center" style="font-size:3.5rem;font-weight:800">Apoya Nuestro Impacto</h1>
+  <h1 class="wp-block-heading has-text-align-center" style="font-size:3.5rem;font-weight:800">Construyamos Oportunidades Juntos</h1>
   <!-- /wp:heading -->
 
   <!-- wp:paragraph {"align":"center","style":{"typography":{"fontSize":"1.4rem"}},"textColor":"base"} -->
@@ -162,15 +162,15 @@ async function run() {
   console.log('--- DEPLOYING CROWDFUNDING PAGE ---');
   
   try {
-    // Check if crowdfunding page already exists
-    const searchRes = await fetch(`${siteUrl}/wp-json/wp/v2/pages?slug=apoyanos`, {
+    // Check if page with slug 'apoyanos' exists (to migrate it)
+    let searchRes = await fetch(`${siteUrl}/wp-json/wp/v2/pages?slug=apoyanos`, {
       headers: { 'Authorization': `Basic ${authString}` }
     });
-    const pages = await searchRes.json();
+    let pages = await searchRes.json();
     
     if (pages.length > 0) {
       const pageId = pages[0].id;
-      console.log(`Crowdfunding page already exists with ID: ${pageId}. Updating page content...`);
+      console.log(`Found legacy 'apoyanos' page (ID: ${pageId}). Migrating it to 'participa'...`);
       const updateRes = await fetch(`${siteUrl}/wp-json/wp/v2/pages/${pageId}`, {
         method: 'POST',
         headers: {
@@ -178,33 +178,61 @@ async function run() {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
+          title: 'Participa',
+          slug: 'participa',
           content: crowdfundingPageHtml
         })
       });
       if (updateRes.ok) {
-        console.log('✅ Success! Crowdfunding page updated.');
+        console.log('✅ Success! Page migrated and updated to "Participa".');
       } else {
-        console.error('❌ Failed to update Crowdfunding page:', await updateRes.json());
+        console.error('❌ Failed to migrate page:', await updateRes.json());
       }
     } else {
-      console.log('Creating a new Crowdfunding page...');
-      const createRes = await fetch(`${siteUrl}/wp-json/wp/v2/pages`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Basic ${authString}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          title: 'Apóyanos',
-          slug: 'apoyanos',
-          content: crowdfundingPageHtml,
-          status: 'publish'
-        })
+      // Check if page with slug 'participa' already exists
+      searchRes = await fetch(`${siteUrl}/wp-json/wp/v2/pages?slug=participa`, {
+        headers: { 'Authorization': `Basic ${authString}` }
       });
-      if (createRes.ok) {
-        console.log('✅ Success! Created new Crowdfunding page.');
+      pages = await searchRes.json();
+      
+      if (pages.length > 0) {
+        const pageId = pages[0].id;
+        console.log(`Page 'participa' already exists with ID: ${pageId}. Updating page content...`);
+        const updateRes = await fetch(`${siteUrl}/wp-json/wp/v2/pages/${pageId}`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Basic ${authString}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            content: crowdfundingPageHtml
+          })
+        });
+        if (updateRes.ok) {
+          console.log('✅ Success! Participa page updated.');
+        } else {
+          console.error('❌ Failed to update Participa page:', await updateRes.json());
+        }
       } else {
-        console.error('❌ Failed to create Crowdfunding page:', await createRes.json());
+        console.log('Creating a new Participa page...');
+        const createRes = await fetch(`${siteUrl}/wp-json/wp/v2/pages`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Basic ${authString}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            title: 'Participa',
+            slug: 'participa',
+            content: crowdfundingPageHtml,
+            status: 'publish'
+          })
+        });
+        if (createRes.ok) {
+          console.log('✅ Success! Created new Participa page.');
+        } else {
+          console.error('❌ Failed to create Participa page:', await createRes.json());
+        }
       }
     }
 
