@@ -51,10 +51,10 @@ async function configureHeader() {
   <div class="wp-block-group">
     <!-- wp:group {"align":"wide","layout":{"type":"flex","flexWrap":"nowrap","justifyContent":"space-between","verticalAlignment":"center"}} -->
     <div class="wp-block-group alignwide" style="display:flex;align-items:center;justify-content:space-between">
-      <!-- wp:image {"width":280,"height":"auto","sizeSlug":"large","linkDestination":"home"} -->
+      <!-- wp:image {"width":150,"height":"auto","sizeSlug":"large","linkDestination":"home"} -->
       <figure class="wp-block-image size-large is-resized" style="margin:0">
         <a href="${siteUrl}">
-          <img src="${logoUrl}" alt="Logo Fundación Casting Entretenimiento" style="width:280px;height:auto;display:block" />
+          <img src="${logoUrl}" alt="Logo Fundación Casting Entretenimiento" style="width:150px;height:auto;display:block" />
         </a>
       </figure>
       <!-- /wp:image -->
