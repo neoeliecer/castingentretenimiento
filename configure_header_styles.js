@@ -80,6 +80,22 @@ body, html, .wp-site-blocks {
   background-color: #94b1d9 !important; /* Soft blue/gray background color */
 }
 
+/* Reduce large gap between header menu and content blocks */
+.wp-site-blocks, 
+main,
+.wp-block-post-content,
+#wp--skip-link--target {
+  padding-top: 0px !important;
+  margin-top: 0px !important;
+}
+
+/* Make sure first content group doesn't have top margin */
+.wp-site-blocks > :first-child,
+main > :first-child,
+.wp-block-post-content > :first-child {
+  margin-top: 0px !important;
+}
+
 /* Hide page title for Homepage (Inicio) and Blog pages */
 body.home h1.wp-block-post-title,
 body.home .wp-block-post-title,
