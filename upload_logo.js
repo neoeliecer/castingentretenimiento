@@ -1,9 +1,17 @@
 const fs = require('fs');
 const path = require('path');
 
-const username = 'neoeliecer';
-const appPassword = 'lmSh q72J QKvv 2dw2 6gXa 7kkj';
-const siteUrl = 'https://dev-castingentretenimiento.pantheonsite.io';
+// Helper to load env variables from .env file without external dependencies
+const envPath = path.join(__dirname, '.env');
+const envContent = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf8') : '';
+const getEnv = (key, fallback) => {
+  const match = envContent.match(new RegExp(`^${key}=(.*)$`, 'm'));
+  return match ? match[1].trim() : (process.env[key] || fallback);
+};
+
+const siteUrl = getEnv('WP_URL', 'https://dev-castingentretenimiento.pantheonsite.io');
+const username = getEnv('WP_USER', 'neoeliecer');
+const appPassword = getEnv('WP_PASSWORD', '');
 
 const authString = Buffer.from(`${username}:${appPassword}`).toString('base64');
 

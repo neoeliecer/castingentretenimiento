@@ -71,6 +71,55 @@ async function getOrUploadFondo() {
   return `${siteUrl}/wp-content/uploads/2026/05/fondo.png`;
 }
 
+async function getOrUploadVideo() {
+  console.log('🔍 Searching for existing video "Cabezote casting" in WordPress Media Library...');
+  try {
+    const searchRes = await fetch(`${siteUrl}/wp-json/wp/v2/media?search=Cabezote&per_page=10`, {
+      headers: { 'Authorization': `Basic ${authString}` }
+    });
+    const mediaItems = await searchRes.json();
+    const perfectMatch = mediaItems.find(item => item.slug && item.slug.includes('cabezote'));
+    if (perfectMatch) {
+      console.log(`✅ Found existing video: ${perfectMatch.source_url}`);
+      return perfectMatch.source_url;
+    }
+  } catch (e) {
+    console.warn('⚠️ Error searching for existing video, will try uploading:', e.message);
+  }
+
+  console.log('📤 Uploading local "Cabezote casting.mp4" to WordPress...');
+  const filePath = path.join(__dirname, 'imagenes', 'Cabezote casting.mp4');
+  if (!fs.existsSync(filePath)) {
+    console.error('❌ Local "Cabezote casting.mp4" not found at:', filePath);
+    return '';
+  }
+
+  const fileBuffer = fs.readFileSync(filePath);
+  try {
+    const uploadRes = await fetch(`${siteUrl}/wp-json/wp/v2/media`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${authString}`,
+        'Content-Disposition': 'attachment; filename="Cabezote-casting.mp4"',
+        'Content-Type': 'video/mp4'
+      },
+      body: fileBuffer
+    });
+
+    const data = await uploadRes.json();
+    if (uploadRes.ok) {
+      console.log(`✅ Success! Cabezote-casting.mp4 uploaded: ${data.source_url}`);
+      return data.source_url;
+    } else {
+      console.error('❌ Failed to upload Cabezote casting video:', data);
+    }
+  } catch (e) {
+    console.error('❌ Error uploading Cabezote casting video:', e.message);
+  }
+
+  return '';
+}
+
 async function uploadLocalImages() {
   const photosDir = path.join(__dirname, 'fotos de carrrusel');
   let uploadedUrls = [];
@@ -165,12 +214,14 @@ async function run() {
   ];
 
   const logoUrl = await getOrUploadFondo();
+  const videoUrl = await getOrUploadVideo();
+  const finalVideoUrl = videoUrl || 'https://dev-castingentretenimiento.pantheonsite.io/wp-content/uploads/2026/05/Cabezote-casting.mp4';
 
   // Create custom HTML block for the premium video background hero header
   const videoHeroHtml = `<!-- wp:html -->
 <div class="casting-video-hero-container">
   <video class="casting-video-bg" autoplay loop muted playsinline>
-    <source src="https://dev-castingentretenimiento.pantheonsite.io/wp-content/uploads/2026/05/Cabezote-casting.mp4" type="video/mp4">
+    <source src="${finalVideoUrl}" type="video/mp4">
     Tu navegador no soporta el elemento de video.
   </video>
   

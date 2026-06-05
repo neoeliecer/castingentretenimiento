@@ -208,7 +208,7 @@ const misionVisionContent = `<!-- wp:group {"align":"full","style":{"spacing":{"
   <!-- wp:buttons {"layout":{"type":"flex","justifyContent":"center"}} -->
   <div class="wp-block-buttons">
     <!-- wp:button {"style":{"border":{"radius":"8px"}},"backgroundColor":"base","textColor":"contrast"} -->
-    <div class="wp-block-button"><a class="wp-block-button__link has-base-background-color has-contrast-color has-text-color has-background" href="https://dev-castingentretenimiento.pantheonsite.io/contacto/" style="border-radius:8px;font-weight:600;padding:12px 30px">¡Escríbenos Hoy Mismo!</a></div>
+    <div class="wp-block-button"><a class="wp-block-button__link has-base-background-color has-contrast-color has-text-color has-background" href="/contacto/" style="border-radius:8px;font-weight:600;padding:12px 30px">¡Escríbenos Hoy Mismo!</a></div>
     <!-- /wp:button -->
   </div>
   <!-- /wp:buttons -->

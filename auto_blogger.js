@@ -175,6 +175,22 @@ Asegúrate de que cada sección sea única y no tenga ninguna idea o frase dupli
 // Publish post to WordPress REST API
 async function publishToWordPress(postData) {
   log(`Publishing post to WordPress: "${postData.title}"`);
+
+  let bgUrl = `${siteUrl}/wp-content/uploads/2026/05/fondo-1.png`;
+  try {
+    const searchRes = await fetch(`${siteUrl}/wp-json/wp/v2/media?search=fondo&per_page=5`, {
+      headers: { 'Authorization': `Basic ${authString}` }
+    });
+    if (searchRes.ok) {
+      const mediaItems = await searchRes.json();
+      const match = mediaItems.find(item => item.slug && item.slug.includes('fondo'));
+      if (match) {
+        bgUrl = match.source_url;
+      }
+    }
+  } catch (e) {
+    log(`Warning: Could not fetch dynamic fondo URL: ${e.message}`);
+  }
   
   const styleBlock = `<!-- wp:html -->
 <style>
@@ -194,7 +210,7 @@ body::before {
   left: 0 !important;
   width: 100vw !important;
   height: 100vh !important;
-  background-image: url('https://dev-castingentretenimiento.pantheonsite.io/wp-content/uploads/2026/05/fondo-1.png') !important;
+  background-image: url('${bgUrl}') !important;
   background-repeat: no-repeat !important;
   background-position: center center !important;
   background-size: 45% auto !important;
