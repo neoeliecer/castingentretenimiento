@@ -480,6 +480,28 @@ async function run() {
       } else {
         console.error('Failed to update homepage:', await updateRes.json());
       }
+    } else {
+      console.log('Homepage page does not exist. Creating a new one...');
+      const createRes = await fetch(`${siteUrl}/wp-json/wp/v2/pages`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${authString}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          title: 'Inicio',
+          slug: 'inicio',
+          content: fullContent,
+          status: 'publish'
+        })
+      });
+      const data = await createRes.json();
+      if (createRes.ok) {
+        homePageId = data.id;
+        console.log(`✅ Success! Homepage created with ID: ${homePageId}`);
+      } else {
+        console.error('Failed to create homepage:', data);
+      }
     }
   } catch (e) {
     console.error('Error:', e.message);
