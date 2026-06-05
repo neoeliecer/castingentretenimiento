@@ -45,8 +45,8 @@ async function configureHeader() {
   const logoUrl = await getLogoUrl();
   console.log(`Using logo: ${logoUrl}`);
 
-  const headerContent = `<!-- wp:group {"align":"full","style":{"spacing":{"padding":{"top":"15px","bottom":"15px","left":"20px","right":"20px"}},"background":{"color":"#ffffff"}},"layout":{"type":"default"}} -->
-<div class="wp-block-group alignfull" style="background-color:#ffffff;padding-top:15px;padding-bottom:15px;padding-left:20px;padding-right:20px;border-bottom:1px solid rgba(0,180,216,0.15)">
+  const headerContent = `<!-- wp:group {"align":"full","style":{"spacing":{"padding":{"top":"15px","bottom":"15px","left":"20px","right":"20px"}},"background":{"color":"transparent"}},"layout":{"type":"default"}} -->
+<div class="wp-block-group alignfull" style="padding-top:15px;padding-bottom:15px;padding-left:20px;padding-right:20px">
   <!-- wp:group {"layout":{"type":"constrained"}} -->
   <div class="wp-block-group">
     <!-- wp:group {"align":"wide","layout":{"type":"flex","flexWrap":"nowrap","justifyContent":"space-between","verticalAlignment":"center"}} -->
@@ -80,18 +80,32 @@ body, html, .wp-site-blocks {
   background-color: #94b1d9 !important; /* Soft blue/gray background color */
 }
 
-/* Ensure the header navigation links match the style */
+/* Hide page title for Homepage (Inicio) and Blog pages */
+body.home h1.wp-block-post-title,
+body.home .wp-block-post-title,
+body.home .entry-title,
+body.blog h1.wp-block-post-title,
+body.blog .wp-block-post-title,
+body.blog .entry-title,
+.page-id-18 h1.wp-block-post-title,
+.page-id-18 .wp-block-post-title,
+.page-id-11 h1.wp-block-post-title,
+.page-id-11 .wp-block-post-title {
+  display: none !important;
+}
+
+/* Ensure the header navigation links match the dark blue style of Pantheon */
 .wp-block-navigation a, 
 .wp-block-navigation .wp-block-navigation-item__content {
-  color: #0b132b !important;
-  font-weight: 600 !important;
-  font-size: 1.05rem !important;
+  color: #0b132b !important; /* Deep dark blue */
+  font-weight: 700 !important;
+  font-size: 1.1rem !important;
   transition: color 0.3s ease !important;
   text-decoration: none !important;
 }
 .wp-block-navigation a:hover,
 .wp-block-navigation .wp-block-navigation-item__content:hover {
-  color: #00b4d8 !important;
+  color: #00b4d8 !important; /* Cyan hover color */
 }
 </style>
 <!-- /wp:html -->`;
